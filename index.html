@@ -1,1 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aim Training Performance Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #ff6b6b;
+            border-color: white;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .drill-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #e9ecef;
+            cursor: pointer;
+        }
+
+        .drill-item:hover {
+            background: #e8f4f8;
+            transform: translateY(-1px);
+        }
+
+        .drill-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .drill-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .drill-score {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .drill-score.no-score {
+            background: #ccc;
+        }
+
+        .drill-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .drill-category {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-warmup { background: #fff3cd; color: #856404; }
+        .category-dynamic { background: #d4edda; color: #155724; }
+        .category-tracking { background: #cce5ff; color: #004085; }
+        .category-integration { background: #f8d7da; color: #721c24; }
+        .category-stability { background: #e2e3e5; color: #383d41; }
+        .category-focus { background: #d1ecf1; color: #0c5460; }
+        .category-static { background: #ffeaa7; color: #6c5ce7; }
+        .category-rest { background: #fd79a8; color: white; }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .file-upload {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .session-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #28a745;
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .session-score {
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .session-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .session-gear {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .import-section {
+            background: #f0f7ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px dashed #667eea;
+        }
+
+        .progress-chart {
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .day-selector {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .day-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #e9ecef;
+            background: white;
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .day-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .day-btn:hover {
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Aim Performance Tracker</h1>
+            <p>Track scores, gear, and progress</p>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="routine">Routine</button>
+                <button class="nav-tab" data-tab="scores">Scores</button>
+                <button class="nav-tab" data-tab="analytics">Analytics</button>
+                <button class="nav-tab" data-tab="import">Import</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="totalSessions">0</div>
+                <div class="stat-label">Sessions</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="avgImprovement">0%</div>
+                <div class="stat-label">Improvement</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="voltaicRank">-</div>
+                <div class="stat-label">Rank</div>
+            </div>
+        </div>
+
+        <!-- Routine Tab -->
+        <div class="tab-content active" id="routine-tab">
+            <div class="content">
+                <div class="section-title">Today's Training</div>
+                <div class="day-selector">
+                    <button class="day-btn active" data-day="1">1</button>
+                    <button class="day-btn" data-day="2">2</button>
+                    <button class="day-btn" data-day="3">3</button>
+                    <button class="day-btn" data-day="4">4</button>
+                    <button class="day-btn" data-day="5">5</button>
+                    <button class="day-btn" data-day="6">6</button>
+                    <button class="day-btn" data-day="7">7</button>
+                </div>
+                <div id="routineDrills"></div>
+            </div>
+        </div>
+
+        <!-- Scores Tab -->
+        <div class="tab-content" id="scores-tab">
+            <div class="content">
+                <div class="section-title">Score History</div>
+                <div id="scoresList"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analytics-tab">
+            <div class="content">
+                <div class="section-title">Performance Analytics</div>
+                <div class="progress-chart">
+                    📈 Progress charts will appear here after importing scores
+                </div>
+                <div id="analyticsContent"></div>
+            </div>
+        </div>
+
+        <!-- Import Tab -->
+        <div class="tab-content" id="import-tab">
+            <div class="content">
+                <div class="section-title">Import Kovaak's Data</div>
+                
+                <div class="import-section">
+                    <h3>Method 1: Upload Stats Files</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                        Find your Kovaak's stats folder: <br>
+                        <code>SteamLibrary\steamapps\common\FPSAimTrainer\FPSAimTrainer\stats\</code>
+                    </p>
+                    <div class="file-upload" id="fileUpload">
+                        <div>📁 Drop CSV files here or click to browse</div>
+                        <input type="file" id="fileInput" multiple accept=".csv" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="import-section">
+                    <h3>Method 2: Manual Entry</h3>
+                    <button class="btn btn-primary" id="addScoreBtn">+ Add Score Manually</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Entry Modal -->
+    <div class="modal" id="scoreModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add Score</div>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Drill/Scenario</label>
+                <select class="form-select" id="drillSelect">
+                    <option value="Pasu">Pasu</option>
+                    <option value="Frogtap">Frogtap</option>
+                    <option value="Popcorn">Popcorn</option>
+                    <option value="Snake Track">Snake Track</option>
+                    <option value="Bounce 180">Bounce 180</option>
+                    <option value="1w3ts">1w3ts</option>
+                    <option value="ControlTS">ControlTS</option>
+                    <option value="Penta Bounce">Penta Bounce</option>
+                    <option value="VT Gridshot">VT Gridshot</option>
+                    <option value="LGCVT">LGCVT</option>
+                    <option value="VT Penta Click">VT Penta Click</option>
+                    <option value="Flow State">Flow State</option>
+                    <option value="custom">Custom...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="customDrillGroup" style="display: none;">
+                <label class="form-label">Custom Drill Name</label>
+                <input type="text" class="form-input" id="customDrill" placeholder="Enter drill name">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Score</label>
+                <input type="number" class="form-input" id="scoreInput" placeholder="Enter your score" step="0.01">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Mousepad</label>
+                <select class="form-select" id="mousepadSelect">
+                    <option value="Artisan Zero">Artisan Zero</option>
+                    <option value="Artisan Hien">Artisan Hien</option>
+                    <option value="Artisan Otsu">Artisan Otsu</option>
+                    <option value="SteelSeries QcK">SteelSeries QcK</option>
+                    <option value="Logitech G640">Logitech G640</option>
+                    <option value="Zowie G-SR">Zowie G-SR</option>
+                    <option value="Corsair MM300">Corsair MM300</option>
+                    <option value="HyperX Fury">HyperX Fury</option>
+                    <option value="custom">Custom...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="customMousepadGroup" style="display: none;">
+                <label class="form-label">Custom Mousepad</label>
+                <input type="text" class="form-input" id="customMousepad" placeholder="Enter mousepad name">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Mouse Skates</label>
+                <select class="form-select" id="skatesSelect">
+                    <option value="Obsidian">Obsidian</option>
+                    <option value="Obsidian Pro">Obsidian Pro</option>
+                    <option value="Jade">Jade</option>
+                    <option value="Jade Air">Jade Air</option>
+                    <option value="Wallhack Pill Skates">Wallhack Pill Skates</option>
+                    <option value="Tiger Ice Dots">Tiger Ice Dots</option>
+                    <option value="custom">Custom...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="customSkatesGroup" style="display: none;">
+                <label class="form-label">Custom Skates</label>
+                <input type="text" class="form-input" id="customSkates" placeholder="Enter skates brand">
+            </div>
+            
+            <button class="btn btn-success" id="saveScore" style="width: 100%; margin-top: 15px;">
+                Save Score
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let scores = [];
+        let currentDay = 1;
+
+        // Aim training data
+        const aimData = {
+            1: [
+                {name: "Frogtap", duration: 3, category: "Warmup", notes: "Smooth clicks"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Reactive flicks"},
+                {name: "Popcorn", duration: 10, category: "Dynamic", notes: "Chaotic switching"},
+                {name: "Snake Track", duration: 3, category: "Tracking", notes: "Linear precision"},
+                {name: "Bounce 180", duration: 5, category: "Integration", notes: "Blend skills"}
+            ],
+            2: [
+                {name: "1w3ts", duration: 3, category: "Warmup", notes: "Calm anchoring"},
+                {name: "ControlTS", duration: 10, category: "Stability", notes: "Composure"},
+                {name: "Penta Bounce", duration: 10, category: "Stability", notes: "Irregular stability"},
+                {name: "Pasu", duration: 3, category: "Dynamic", notes: "Maintenance"},
+                {name: "VT Gridshot", duration: 5, category: "Integration", notes: "Game-like flicks"}
+            ],
+            3: [
+                {name: "LGCVT", duration: 3, category: "Warmup", notes: "Gentle warm-up"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Core training"},
+                {name: "VT Penta Click", duration: 10, category: "Static", notes: "Static precision"},
+                {name: "Flow State", duration: 3, category: "Focus", notes: "Mental clarity"},
+                {name: "Popcorn", duration: 5, category: "Integration", notes: "Skill blend"}
+            ],
+            4: [
+                {name: "1w3ts", duration: 3, category: "Warmup", notes: "Gentle start"},
+                {name: "ControlTS", duration: 5, category: "Stability", notes: "Control focus"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Main drill"},
+                {name: "Snake Track", duration: 7, category: "Integration", notes: "Tracking blend"}
+            ],
+            5: [
+                {name: "Frogtap", duration: 3, category: "Warmup", notes: "Preparation"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Intensive training"},
+                {name: "VT Penta Click", duration: 10, category: "Static", notes: "Precision work"},
+                {name: "Flow State", duration: 3, category: "Focus", notes: "Concentration"},
+                {name: "Bounce 180", duration: 5, category: "Integration", notes: "Skill synthesis"}
+            ],
+            6: [
+                {name: "LGCVT", duration: 3, category: "Warmup", notes: "Activation"},
+                {name: "ControlTS", duration: 10, category: "Stability", notes: "Stability focus"},
+                {name: "Penta Bounce", duration: 10, category: "Stability", notes: "Advanced stability"},
+                {name: "Popcorn", duration: 3, category: "Dynamic", notes: "Quick switches"},
+                {name: "VT Gridshot", duration: 5, category: "Integration", notes: "Game application"}
+            ],
+            7: [] // Rest day
+        };
+
+        // Initialize app
+        function init() {
+            loadData();
+            setupEventListeners();
+            updateDisplay();
+            
+            // Set current day based on date
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+            currentDay = ((dayOfYear - 1) % 7) + 1;
+            
+            displayRoutine(currentDay);
+        }
+
+        // Load saved data
+        function loadData() {
+            const saved = localStorage.getItem('aimTrackerData');
+            if (saved) {
+                scores = JSON.parse(saved);
+            }
+        }
+
+        // Save data
+        function saveData() {
+            localStorage.setItem('aimTrackerData', JSON.stringify(scores));
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => switchTab(e.target.dataset.tab));
+            });
+
+            // Day selector
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    currentDay = parseInt(e.target.dataset.day);
+                    displayRoutine(currentDay);
+                });
+            });
+
+            // Modal controls
+            document.getElementById('addScoreBtn').addEventListener('click', openModal);
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('saveScore').addEventListener('click', saveScore);
+
+            // Custom dropdowns
+            document.getElementById('drillSelect').addEventListener('change', toggleCustomField);
+            document.getElementById('mousepadSelect').addEventListener('change', toggleCustomField);
+            document.getElementById('skatesSelect').addEventListener('change', toggleCustomField);
+
+            // File upload
+            document.getElementById('fileUpload').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            if (tabName === 'scores') updateScoresDisplay();
+            if (tabName === 'analytics') updateAnalyticsDisplay();
+        }
+
+        // Display routine for specific day
+        function displayRoutine(day) {
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.day) === day);
+            });
+
+            const drills = aimData[day];
+            const container = document.getElementById('routineDrills');
+            
+            if (drills.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>🛌 Rest Day</h3>
+                        <p>Recovery and consolidation</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = drills.map(drill => {
+                const latestScore = getLatestScore(drill.name);
+                const scoreDisplay = latestScore 
+                    ? `${latestScore.score}` 
+                    : 'No score';
+                const scoreClass = latestScore ? '' : 'no-score';
+
+                return `
+                    <div class="drill-item" onclick="openScoreModal('${drill.name}')">
+                        <div class="drill-header">
+                            <div class="drill-name">${drill.name}</div>
+                            <div class="drill-score ${scoreClass}">${scoreDisplay}</div>
+                        </div>
+                        <div class="drill-info">
+                            <div>
+                                <span class="drill-category category-${drill.category.toLowerCase()}">${drill.category}</span>
+                                <span style="margin-left: 8px; font-style: italic;">${drill.notes}</span>
+                            </div>
+                            <div>${drill.duration}min</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get latest score for a drill
+        function getLatestScore(drillName) {
+            const drillScores = scores.filter(s => s.drill === drillName);
+            if (drillScores.length === 0) return null;
+            
+            drillScores.sort((a, b) => new Date(b.date) - new Date(a.date));
+            return drillScores[0];
+        }
+
+        // Open modal
+        function openModal() {
+            document.getElementById('scoreModal').classList.add('active');
+        }
+
+        // Open modal with specific drill
+        function openScoreModal(drillName) {
+            document.getElementById('drillSelect').value = drillName;
+            openModal();
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('scoreModal').classList.remove('active');
+            resetModalForm();
+        }
+
+        // Reset modal form
+        function resetModalForm() {
+            document.getElementById('scoreInput').value = '';
+            document.getElementById('drillSelect').value = 'Pasu';
+            document.getElementById('mousepadSelect').value = 'Artisan Zero';
+            document.getElementById('skatesSelect').value = 'Stock';
+            hideCustomFields();
+        }
+
+        // Toggle custom fields
+        function toggleCustomField(event) {
+            const select = event.target;
+            const customGroup = select.id.replace('Select', 'Group');
+            const customInput = select.id.replace('Select', '');
+            
+            if (select.value === 'custom') {
+                document.getElementById(`custom${customGroup.charAt(6).toUpperCase() + customGroup.slice(7)}`).style.display = 'block';
+            } else {
+                document.getElementById(`custom${customGroup.charAt(6).toUpperCase() + customGroup.slice(7)}`).style.display = 'none';
+            }
+        }
+
+        // Hide custom fields
+        function hideCustomFields() {
+            document.getElementById('customDrillGroup').style.display = 'none';
+            document.getElementById('customMousepadGroup').style.display = 'none';
+            document.getElementById('customSkatesGroup').style.display = 'none';
+        }
+
+        // Save score
+        function saveScore() {
+            const drillSelect = document.getElementById('drillSelect');
+            const scoreInput = document.getElementById('scoreInput');
+            const mousepadSelect = document.getElementById('mousepadSelect');
+            const skatesSelect = document.getElementById('skatesSelect');
+
+            // Get drill name
+            let drillName = drillSelect.value;
+            if (drillName === 'custom') {
+                drillName = document.getElementById('customDrill').value;
+            }
+
+            // Get equipment
+            let mousepad = mousepadSelect.value;
+            if (mousepad === 'custom') {
+                mousepad = document.getElementById('customMousepad').value;
+            }
+
+            let skates = skatesSelect.value;
+            if (skates === 'custom') {
+                skates = document.getElementById('customSkates').value;
+            }
+
+            // Validate
+            if (!drillName || !scoreInput.value) {
+                alert('Please fill in drill name and score');
+                return;
+            }
+
+            // Create score entry
+            const scoreEntry = {
+                id: Date.now(),
+                drill: drillName,
+                score: parseFloat(scoreInput.value),
+                mousepad: mousepad,
+                skates: skates,
+                date: new Date().toISOString()
+            };
+
+            scores.push(scoreEntry);
+            saveData();
+            updateDisplay();
+            closeModal();
+            
+            // Refresh current view
+            if (document.querySelector('[data-tab="routine"]').classList.contains('active')) {
+                displayRoutine(currentDay);
+            }
+        }
+
+        // Handle file upload
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                if (file.name.endsWith('.csv')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        parseKovaakCSV(e.target.result, file.name);
+                    };
+                    reader.readAsText(file);
+                }
+            });
+        }
+
+        // Parse Kovaak's CSV files
+        function parseKovaakCSV(csvContent, fileName) {
+            const lines = csvContent.split('\n');
+            if (lines.length < 2) return;
+
+            // Extract drill name from filename (remove .csv extension and timestamp)
+            const drillName = fileName.replace('.csv', '').replace(/\s-\s\d{4}\.\d{2}\.\d{2}-\d{2}\.\d{2}\.\d{2}/, '');
+            
+            // Parse headers
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            // Find score column (usually "Score" or contains "Score")
+            const scoreColumnIndex = headers.findIndex(h => 
+                h.toLowerCase().includes('score') || 
+                h.toLowerCase().includes('kills') ||
+                h.toLowerCase().includes('hits')
+            );
+
+            if (scoreColumnIndex === -1) {
+                console.warn(`Could not find score column in ${fileName}`);
+                return;
+            }
+
+            // Parse data rows
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i].split(',');
+                if (row.length <= scoreColumnIndex) continue;
+
+                const score = parseFloat(row[scoreColumnIndex]);
+                if (isNaN(score)) continue;
+
+                // Try to extract date from filename or use current date
+                const dateMatch = fileName.match(/(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2})/);
+                let date;
+                if (dateMatch) {
+                    const [, year, month, day, hour, minute, second] = dateMatch;
+                    date = new Date(year, month - 1, day, hour, minute, second);
+                } else {
+                    date = new Date();
+                }
+
+                // Add score entry
+                const scoreEntry = {
+                    id: Date.now() + i,
+                    drill: drillName,
+                    score: score,
+                    mousepad: 'Unknown',
+                    skates: 'Unknown',
+                    date: date.toISOString(),
+                    imported: true
+                };
+
+                // Avoid duplicates
+                const exists = scores.some(s => 
+                    s.drill === scoreEntry.drill && 
+                    s.score === scoreEntry.score && 
+                    Math.abs(new Date(s.date) - new Date(scoreEntry.date)) < 60000
+                );
+
+                if (!exists) {
+                    scores.push(scoreEntry);
+                }
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            updateStats();
+            saveData();
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalSessions').textContent = scores.length;
+            
+            // Calculate improvement
+            const improvement = calculateImprovement();
+            document.getElementById('avgImprovement').textContent = `${improvement}%`;
+            
+            // Calculate Voltaic rank (simplified)
+            const rank = calculateVoltaicRank();
+            document.getElementById('voltaicRank').textContent = rank;
+        }
+
+        // Calculate improvement percentage
+        function calculateImprovement() {
+            if (scores.length < 2) return 0;
+            
+            const drillGroups = {};
+            scores.forEach(score => {
+                if (!drillGroups[score.drill]) {
+                    drillGroups[score.drill] = [];
+                }
+                drillGroups[score.drill].push(score);
+            });
+
+            let totalImprovement = 0;
+            let drillCount = 0;
+
+            Object.values(drillGroups).forEach(drillScores => {
+                if (drillScores.length < 2) return;
+                
+                drillScores.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const first = drillScores[0].score;
+                const last = drillScores[drillScores.length - 1].score;
+                
+                if (first > 0) {
+                    const improvement = ((last - first) / first) * 100;
+                    totalImprovement += improvement;
+                    drillCount++;
+                }
+            });
+
+            return drillCount > 0 ? Math.round(totalImprovement / drillCount) : 0;
+        }
+
+        // Calculate Voltaic rank (simplified estimation)
+        function calculateVoltaicRank() {
+            if (scores.length === 0) return 'Unranked';
+            
+            const avgScore = scores.reduce((sum, s) => sum + s.score, 0) / scores.length;
+            
+            // Simplified rank calculation based on average score
+            if (avgScore < 50) return 'Iron';
+            if (avgScore < 100) return 'Bronze';
+            if (avgScore < 200) return 'Silver';
+            if (avgScore < 400) return 'Gold';
+            if (avgScore < 600) return 'Platinum';
+            if (avgScore < 800) return 'Diamond';
+            if (avgScore < 1000) return 'Jade';
+            return 'Master';
+        }
+
+        // Update scores display
+        function updateScoresDisplay() {
+            const container = document.getElementById('scoresList');
+            
+            if (scores.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>No scores recorded yet.</p>
+                        <p>Import Kovaak's files or add scores manually!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group by drill
+            const drillGroups = {};
+            scores.forEach(score => {
+                if (!drillGroups[score.drill]) {
+                    drillGroups[score.drill] = [];
+                }
+                drillGroups[score.drill].push(score);
+            });
+
+            container.innerHTML = Object.entries(drillGroups).map(([drill, drillScores]) => {
+                drillScores.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const best = Math.max(...drillScores.map(s => s.score));
+                
+                return `
+                    <div class="drill-item">
+                        <div class="drill-header">
+                            <div class="drill-name">${drill}</div>
+                            <div class="drill-score">PB: ${best}</div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            ${drillScores.slice(0, 3).map(score => `
+                                <div class="session-item">
+                                    <div class="session-header">
+                                        <div class="session-score">${score.score}</div>
+                                        <div class="session-date">${new Date(score.date).toLocaleDateString()}</div>
+                                    </div>
+                                    <div class="session-gear">
+                                        ${score.mousepad} • ${score.skates}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update analytics display
+        function updateAnalyticsDisplay() {
+            const container = document.getElementById('analyticsContent');
+            
+            if (scores.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #666;">
+                        <p>Import scores to see detailed analytics!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Equipment analysis
+            const mousepadStats = {};
+            const skatesStats = {};
+
+            scores.forEach(score => {
+                if (!mousepadStats[score.mousepad]) {
+                    mousepadStats[score.mousepad] = { count: 0, totalScore: 0 };
+                }
+                mousepadStats[score.mousepad].count++;
+                mousepadStats[score.mousepad].totalScore += score.score;
+
+                if (!skatesStats[score.skates]) {
+                    skatesStats[score.skates] = { count: 0, totalScore: 0 };
+                }
+                skatesStats[score.skates].count++;
+                skatesStats[score.skates].totalScore += score.score;
+            });
+
+            // Find best performing equipment
+            let bestMousepad = '';
+            let bestMousepadAvg = 0;
+            Object.entries(mousepadStats).forEach(([pad, stats]) => {
+                const avg = stats.totalScore / stats.count;
+                if (avg > bestMousepadAvg) {
+                    bestMousepadAvg = avg;
+                    bestMousepad = pad;
+                }
+            });
+
+            let bestSkates = '';
+            let bestSkatesAvg = 0;
+            Object.entries(skatesStats).forEach(([skates, stats]) => {
+                const avg = stats.totalScore / stats.count;
+                if (avg > bestSkatesAvg) {
+                    bestSkatesAvg = avg;
+                    bestSkates = skates;
+                }
+            });
+
+            container.innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 10px;">🏆 Best Performing Setup</h4>
+                    <p><strong>Mousepad:</strong> ${bestMousepad} (${bestMousepadAvg.toFixed(1)} avg)</p>
+                    <p><strong>Skates:</strong> ${bestSkates} (${bestSkatesAvg.toFixed(1)} avg)</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px;">📊 Equipment Usage</h4>
+                    <div style="font-size: 12px;">
+                        ${Object.entries(mousepadStats).map(([pad, stats]) => 
+                            `<div style="margin-bottom: 5px;">${pad}: ${stats.count} sessions (${(stats.totalScore/stats.count).toFixed(1)} avg)</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
