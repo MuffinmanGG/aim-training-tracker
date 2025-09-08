@@ -287,20 +287,6 @@
             background: #218838;
         }
 
-        .file-upload {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-upload:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-
         .session-item {
             background: #f8f9fa;
             border-radius: 8px;
@@ -331,23 +317,27 @@
             color: #888;
         }
 
-        .import-section {
-            background: #f0f7ff;
+        .config-section {
+            background: #fff3cd;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
-            border: 2px dashed #667eea;
+            border: 2px solid #ffeaa7;
         }
 
-        .progress-chart {
-            height: 200px;
-            background: #f8f9fa;
+        .sync-status {
+            background: #d4edda;
+            color: #155724;
+            padding: 8px 12px;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            margin-bottom: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .sync-status.error {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .day-selector {
@@ -398,12 +388,12 @@
     <div class="container">
         <div class="header">
             <h1>🎯 Aim Performance Tracker</h1>
-            <p>Track scores, gear, and progress</p>
+            <p>Cloud-synced scores & analytics</p>
             <div class="nav-tabs">
                 <button class="nav-tab active" data-tab="routine">Routine</button>
                 <button class="nav-tab" data-tab="scores">Scores</button>
                 <button class="nav-tab" data-tab="analytics">Analytics</button>
-                <button class="nav-tab" data-tab="import">Import</button>
+                <button class="nav-tab" data-tab="setup">Setup</button>
             </div>
         </div>
 
@@ -425,6 +415,7 @@
         <!-- Routine Tab -->
         <div class="tab-content active" id="routine-tab">
             <div class="content">
+                <div class="sync-status" id="syncStatus">✅ Connected to Google Sheets</div>
                 <div class="section-title">Today's Training</div>
                 <div class="day-selector">
                     <button class="day-btn active" data-day="1">1</button>
@@ -451,32 +442,33 @@
         <div class="tab-content" id="analytics-tab">
             <div class="content">
                 <div class="section-title">Performance Analytics</div>
-                <div class="progress-chart">
-                    📈 Progress charts will appear here after importing scores
-                </div>
                 <div id="analyticsContent"></div>
             </div>
         </div>
 
-        <!-- Import Tab -->
-        <div class="tab-content" id="import-tab">
+        <!-- Setup Tab -->
+        <div class="tab-content" id="setup-tab">
             <div class="content">
-                <div class="section-title">Import Kovaak's Data</div>
+                <div class="section-title">Google Sheets Setup</div>
                 
-                <div class="import-section">
-                    <h3>Method 1: Upload Stats Files</h3>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
-                        Find your Kovaak's stats folder: <br>
-                        <code>SteamLibrary\steamapps\common\FPSAimTrainer\FPSAimTrainer\stats\</code>
+                <div class="config-section">
+                    <h3>🔗 Connection Settings</h3>
+                    <p style="margin-bottom: 15px; font-size: 14px; color: #666;">
+                        Enter your Google Apps Script Web App URL to enable cloud sync:
                     </p>
-                    <div class="file-upload" id="fileUpload">
-                        <div>📁 Drop CSV files here or click to browse</div>
-                        <input type="file" id="fileInput" multiple accept=".csv" style="display: none;">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Web App URL</label>
+                        <input type="url" class="form-input" id="webAppUrl" 
+                               placeholder="https://script.google.com/macros/s/.../exec">
                     </div>
+                    
+                    <button class="btn btn-success" id="saveConfigBtn">💾 Save Configuration</button>
+                    <button class="btn btn-primary" id="testConnectionBtn" style="margin-left: 10px;">🧪 Test Connection</button>
                 </div>
 
-                <div class="import-section">
-                    <h3>Method 2: Manual Entry</h3>
+                <div class="config-section">
+                    <h3>📝 Manual Score Entry</h3>
                     <button class="btn btn-primary" id="addScoreBtn">+ Add Score Manually</button>
                 </div>
             </div>
@@ -523,14 +515,10 @@
             <div class="form-group">
                 <label class="form-label">Mousepad</label>
                 <select class="form-select" id="mousepadSelect">
-                    <option value="Artisan Zero">Artisan Zero</option>
-                    <option value="Artisan Hien">Artisan Hien</option>
-                    <option value="Artisan Otsu">Artisan Otsu</option>
-                    <option value="SteelSeries QcK">SteelSeries QcK</option>
-                    <option value="Logitech G640">Logitech G640</option>
-                    <option value="Zowie G-SR">Zowie G-SR</option>
-                    <option value="Corsair MM300">Corsair MM300</option>
-                    <option value="HyperX Fury">HyperX Fury</option>
+                    <option value="LGG Saturn Pro Soft">LGG Saturn Pro Soft</option>
+                    <option value="Xraypad Aqua Control +">Xraypad Aqua Control +</option>
+                    <option value="Wallhacks SP-004">Wallhacks SP-004</option>
+                    <option value="Lock-On Harut">Lock-On Harut</option>
                     <option value="custom">Custom...</option>
                 </select>
             </div>
@@ -559,13 +547,14 @@
             </div>
             
             <button class="btn btn-success" id="saveScore" style="width: 100%; margin-top: 15px;">
-                Save Score
+                💾 Save to Google Sheets
             </button>
         </div>
     </div>
 
     <script>
-        // Data storage
+        // Configuration and data storage
+        let webAppUrl = '';
         let scores = [];
         let currentDay = 1;
 
@@ -617,7 +606,7 @@
 
         // Initialize app
         function init() {
-            loadData();
+            loadConfig();
             setupEventListeners();
             updateDisplay();
             
@@ -627,19 +616,25 @@
             currentDay = ((dayOfYear - 1) % 7) + 1;
             
             displayRoutine(currentDay);
+            updateSyncStatus();
         }
 
-        // Load saved data
-        function loadData() {
-            const saved = localStorage.getItem('aimTrackerData');
+        // Load configuration
+        function loadConfig() {
+            const saved = localStorage.getItem('aimTrackerConfig');
             if (saved) {
-                scores = JSON.parse(saved);
+                const config = JSON.parse(saved);
+                webAppUrl = config.webAppUrl || '';
+                document.getElementById('webAppUrl').value = webAppUrl;
             }
         }
 
-        // Save data
-        function saveData() {
-            localStorage.setItem('aimTrackerData', JSON.stringify(scores));
+        // Save configuration
+        function saveConfig() {
+            const config = {
+                webAppUrl: webAppUrl
+            };
+            localStorage.setItem('aimTrackerConfig', JSON.stringify(config));
         }
 
         // Setup event listeners
@@ -662,17 +657,14 @@
             document.getElementById('closeModal').addEventListener('click', closeModal);
             document.getElementById('saveScore').addEventListener('click', saveScore);
 
+            // Config controls
+            document.getElementById('saveConfigBtn').addEventListener('click', saveConfiguration);
+            document.getElementById('testConnectionBtn').addEventListener('click', testConnection);
+
             // Custom dropdowns
             document.getElementById('drillSelect').addEventListener('change', toggleCustomField);
             document.getElementById('mousepadSelect').addEventListener('change', toggleCustomField);
             document.getElementById('skatesSelect').addEventListener('change', toggleCustomField);
-
-            // File upload
-            document.getElementById('fileUpload').addEventListener('click', () => {
-                document.getElementById('fileInput').click();
-            });
-
-            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
         }
 
         // Switch tabs
@@ -685,6 +677,55 @@
 
             if (tabName === 'scores') updateScoresDisplay();
             if (tabName === 'analytics') updateAnalyticsDisplay();
+        }
+
+        // Save configuration
+        function saveConfiguration() {
+            webAppUrl = document.getElementById('webAppUrl').value.trim();
+            if (!webAppUrl) {
+                showSyncStatus('Please enter your Web App URL', 'error');
+                return;
+            }
+            
+            saveConfig();
+            showSyncStatus('Configuration saved! ✅');
+            updateSyncStatus();
+        }
+
+        // Test connection
+        async function testConnection() {
+            if (!webAppUrl) {
+                showSyncStatus('Please enter and save your Web App URL first', 'error');
+                return;
+            }
+
+            try {
+                showSyncStatus('Testing connection...', 'info');
+                
+                const testData = {
+                    date: new Date().toISOString(),
+                    drill: 'Connection Test',
+                    score: 0,
+                    mousepad: 'Test',
+                    skates: 'Test'
+                };
+
+                const response = await fetch(webAppUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                if (response.ok) {
+                    showSyncStatus('✅ Connection successful!');
+                } else {
+                    showSyncStatus('❌ Connection failed. Check your URL.', 'error');
+                }
+            } catch (error) {
+                showSyncStatus('❌ Connection error: ' + error.message, 'error');
+            }
         }
 
         // Display routine for specific day
@@ -761,8 +802,8 @@
         function resetModalForm() {
             document.getElementById('scoreInput').value = '';
             document.getElementById('drillSelect').value = 'Pasu';
-            document.getElementById('mousepadSelect').value = 'Artisan Zero';
-            document.getElementById('skatesSelect').value = 'Stock';
+            document.getElementById('mousepadSelect').value = 'LGG Saturn Pro Soft';
+            document.getElementById('skatesSelect').value = 'Obsidian';
             hideCustomFields();
         }
 
@@ -770,7 +811,6 @@
         function toggleCustomField(event) {
             const select = event.target;
             const customGroup = select.id.replace('Select', 'Group');
-            const customInput = select.id.replace('Select', '');
             
             if (select.value === 'custom') {
                 document.getElementById(`custom${customGroup.charAt(6).toUpperCase() + customGroup.slice(7)}`).style.display = 'block';
@@ -786,8 +826,13 @@
             document.getElementById('customSkatesGroup').style.display = 'none';
         }
 
-        // Save score
-        function saveScore() {
+        // Save score to Google Sheets
+        async function saveScore() {
+            if (!webAppUrl) {
+                showSyncStatus('Please configure your Web App URL in the Setup tab first', 'error');
+                return;
+            }
+
             const drillSelect = document.getElementById('drillSelect');
             const scoreInput = document.getElementById('scoreInput');
             const mousepadSelect = document.getElementById('mousepadSelect');
@@ -812,116 +857,80 @@
 
             // Validate
             if (!drillName || !scoreInput.value) {
-                alert('Please fill in drill name and score');
+                showSyncStatus('Please fill in drill name and score', 'error');
                 return;
             }
 
             // Create score entry
             const scoreEntry = {
-                id: Date.now(),
+                date: new Date().toISOString(),
                 drill: drillName,
                 score: parseFloat(scoreInput.value),
                 mousepad: mousepad,
-                skates: skates,
-                date: new Date().toISOString()
+                skates: skates
             };
 
-            scores.push(scoreEntry);
-            saveData();
-            updateDisplay();
-            closeModal();
-            
-            // Refresh current view
-            if (document.querySelector('[data-tab="routine"]').classList.contains('active')) {
-                displayRoutine(currentDay);
-            }
-        }
+            try {
+                showSyncStatus('Saving to Google Sheets...', 'info');
+                
+                const response = await fetch(webAppUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scoreEntry)
+                });
 
-        // Handle file upload
-        function handleFileUpload(event) {
-            const files = event.target.files;
-            if (files.length === 0) return;
-
-            Array.from(files).forEach(file => {
-                if (file.name.endsWith('.csv')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        parseKovaakCSV(e.target.result, file.name);
-                    };
-                    reader.readAsText(file);
-                }
-            });
-        }
-
-        // Parse Kovaak's CSV files
-        function parseKovaakCSV(csvContent, fileName) {
-            const lines = csvContent.split('\n');
-            if (lines.length < 2) return;
-
-            // Extract drill name from filename (remove .csv extension and timestamp)
-            const drillName = fileName.replace('.csv', '').replace(/\s-\s\d{4}\.\d{2}\.\d{2}-\d{2}\.\d{2}\.\d{2}/, '');
-            
-            // Parse headers
-            const headers = lines[0].split(',').map(h => h.trim());
-            
-            // Find score column (usually "Score" or contains "Score")
-            const scoreColumnIndex = headers.findIndex(h => 
-                h.toLowerCase().includes('score') || 
-                h.toLowerCase().includes('kills') ||
-                h.toLowerCase().includes('hits')
-            );
-
-            if (scoreColumnIndex === -1) {
-                console.warn(`Could not find score column in ${fileName}`);
-                return;
-            }
-
-            // Parse data rows
-            for (let i = 1; i < lines.length; i++) {
-                const row = lines[i].split(',');
-                if (row.length <= scoreColumnIndex) continue;
-
-                const score = parseFloat(row[scoreColumnIndex]);
-                if (isNaN(score)) continue;
-
-                // Try to extract date from filename or use current date
-                const dateMatch = fileName.match(/(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2})/);
-                let date;
-                if (dateMatch) {
-                    const [, year, month, day, hour, minute, second] = dateMatch;
-                    date = new Date(year, month - 1, day, hour, minute, second);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showSyncStatus('✅ Score saved to Google Sheets!');
+                        scores.push({...scoreEntry, id: Date.now()});
+                        updateDisplay();
+                        closeModal();
+                        
+                        // Refresh current view
+                        if (document.querySelector('[data-tab="routine"]').classList.contains('active')) {
+                            displayRoutine(currentDay);
+                        }
+                    } else {
+                        showSyncStatus('❌ Error saving: ' + result.error, 'error');
+                    }
                 } else {
-                    date = new Date();
+                    showSyncStatus('❌ Failed to save score. Check your connection.', 'error');
                 }
+            } catch (error) {
+                showSyncStatus('❌ Network error: ' + error.message, 'error');
+            }
+        }
 
-                // Add score entry
-                const scoreEntry = {
-                    id: Date.now() + i,
-                    drill: drillName,
-                    score: score,
-                    mousepad: 'Unknown',
-                    skates: 'Unknown',
-                    date: date.toISOString(),
-                    imported: true
-                };
+        // Show sync status
+        function showSyncStatus(message, type = 'success') {
+            const status = document.getElementById('syncStatus');
+            status.textContent = message;
+            status.className = 'sync-status';
+            if (type === 'error') status.classList.add('error');
+            status.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
+        }
 
-                // Avoid duplicates
-                const exists = scores.some(s => 
-                    s.drill === scoreEntry.drill && 
-                    s.score === scoreEntry.score && 
-                    Math.abs(new Date(s.date) - new Date(scoreEntry.date)) < 60000
-                );
-
-                if (!exists) {
-                    scores.push(scoreEntry);
-                }
+        // Update sync status
+        function updateSyncStatus() {
+            if (webAppUrl) {
+                showSyncStatus('✅ Connected to Google Sheets');
+            } else {
+                showSyncStatus('⚠️ Please configure Google Sheets connection in Setup tab', 'error');
             }
         }
 
         // Update display
         function updateDisplay() {
             updateStats();
-            saveData();
         }
 
         // Update stats
@@ -994,7 +1003,7 @@
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <p>No scores recorded yet.</p>
-                        <p>Import Kovaak's files or add scores manually!</p>
+                        <p>Add scores manually in the Setup tab!</p>
                     </div>
                 `;
                 return;
@@ -1044,7 +1053,7 @@
             if (scores.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; color: #666;">
-                        <p>Import scores to see detailed analytics!</p>
+                        <p>Add scores to see detailed analytics!</p>
                     </div>
                 `;
                 return;
@@ -1105,6 +1114,79 @@
                     </div>
                 </div>
             `;
+        }
+
+        // Add drill mapping
+        function addDrillMapping() {
+            try {
+                const original = document.getElementById('originalDrill').value.trim();
+                const mapped = document.getElementById('mappedDrill').value.trim();
+                
+                if (!original || !mapped) {
+                    showSyncStatus('Please enter both drill names', 'error');
+                    return;
+                }
+                
+                if (!drillMappings) drillMappings = {};
+                drillMappings[original] = mapped;
+                saveConfig();
+                updateDrillMappingsDisplay();
+                
+                // Clear inputs
+                document.getElementById('originalDrill').value = '';
+                document.getElementById('mappedDrill').value = '';
+                
+                // Refresh routine display to show updated names
+                displayRoutine(currentDay);
+                
+                showSyncStatus(`✅ Mapping added: ${original} → ${mapped}`);
+            } catch (error) {
+                console.error('Error adding drill mapping:', error);
+                showSyncStatus('Error adding mapping', 'error');
+            }
+        }
+
+        // Delete drill mapping
+        function deleteDrillMapping(original) {
+            try {
+                if (!drillMappings) drillMappings = {};
+                delete drillMappings[original];
+                saveConfig();
+                updateDrillMappingsDisplay();
+                displayRoutine(currentDay);
+                showSyncStatus(`✅ Mapping removed: ${original}`);
+            } catch (error) {
+                console.error('Error deleting drill mapping:', error);
+                showSyncStatus('Error removing mapping', 'error');
+            }
+        }
+
+        // Update drill mappings display
+        function updateDrillMappingsDisplay() {
+            try {
+                const container = document.getElementById('drillMappingsList');
+                if (!container) return; // Element doesn't exist yet
+                
+                if (!drillMappings || Object.keys(drillMappings).length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #666; font-style: italic;">
+                            No drill mappings yet. Add them as you discover what's available in Kovaak's!
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = Object.entries(drillMappings).map(([original, mapped]) => `
+                    <div class="mapping-item">
+                        <div class="original">${original}</div>
+                        <div class="arrow">→</div>
+                        <div class="mapped">${mapped}</div>
+                        <button class="delete-btn" onclick="deleteDrillMapping('${original}')">Delete</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error updating drill mappings display:', error);
+            }
         }
 
         // Initialize the app when page loads
