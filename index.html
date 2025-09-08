@@ -369,6 +369,47 @@
             background: #f8f9fa;
         }
 
+        .mapping-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .mapping-item .original {
+            flex: 1;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .mapping-item .arrow {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .mapping-item .mapped {
+            flex: 1;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .mapping-item .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .mapping-item .delete-btn:hover {
+            background: #c82333;
+        }
+
         @media (max-width: 480px) {
             .container {
                 margin: 10px;
@@ -468,6 +509,22 @@
                 </div>
 
                 <div class="config-section">
+                    <h3>🔄 Drill Name Mappings</h3>
+                    <p style="margin-bottom: 15px; font-size: 14px; color: #666;">
+                        Map routine drill names to actual Kovaak's scenario names:
+                    </p>
+                    
+                    <div id="drillMappingsList"></div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <input type="text" class="form-input" id="originalDrill" placeholder="Original drill name" style="flex: 1;">
+                        <span style="padding: 10px;">→</span>
+                        <input type="text" class="form-input" id="mappedDrill" placeholder="Actual Kovaak's name" style="flex: 1;">
+                        <button class="btn btn-success" id="addMappingBtn">Add</button>
+                    </div>
+                </div>
+
+                <div class="config-section">
                     <h3>📝 Manual Score Entry</h3>
                     <button class="btn btn-primary" id="addScoreBtn">+ Add Score Manually</button>
                 </div>
@@ -556,7 +613,22 @@
         // Configuration and data storage
         let webAppUrl = '';
         let scores = [];
+        let drillMappings = {}; // Store drill name mappings
         let currentDay = 1;
+
+        // Apply drill mapping - safe version with error handling
+        function applyDrillMapping(drillName) {
+            try {
+                if (!drillName) return drillName;
+                if (!drillMappings || typeof drillMappings !== 'object') {
+                    drillMappings = {};
+                }
+                return drillMappings[drillName] || drillName;
+            } catch (error) {
+                console.warn('Error in applyDrillMapping:', error);
+                return drillName; // fallback to original name
+            }
+        }
 
         // Aim training data
         const aimData = {
@@ -606,35 +678,60 @@
 
         // Initialize app
         function init() {
-            loadConfig();
-            setupEventListeners();
-            updateDisplay();
-            
-            // Set current day based on date
-            const today = new Date();
-            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-            currentDay = ((dayOfYear - 1) % 7) + 1;
-            
-            displayRoutine(currentDay);
-            updateSyncStatus();
+            try {
+                loadConfig();
+                setupEventListeners();
+                updateDisplay();
+                
+                // Set current day based on date
+                const today = new Date();
+                const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+                currentDay = ((dayOfYear - 1) % 7) + 1;
+                
+                // Display routine and update sync status
+                displayRoutine(currentDay);
+                updateSyncStatus();
+                
+                // Update drill mappings display if on setup tab
+                if (document.getElementById('setup-tab').classList.contains('active')) {
+                    updateDrillMappingsDisplay();
+                }
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                // Fallback initialization
+                drillMappings = {};
+                currentDay = 1;
+                displayRoutine(currentDay);
+            }
         }
 
         // Load configuration
         function loadConfig() {
-            const saved = localStorage.getItem('aimTrackerConfig');
-            if (saved) {
-                const config = JSON.parse(saved);
-                webAppUrl = config.webAppUrl || '';
-                document.getElementById('webAppUrl').value = webAppUrl;
+            try {
+                const saved = localStorage.getItem('aimTrackerConfig');
+                if (saved) {
+                    const config = JSON.parse(saved);
+                    webAppUrl = config.webAppUrl || '';
+                    drillMappings = config.drillMappings || {};
+                    document.getElementById('webAppUrl').value = webAppUrl;
+                }
+            } catch (error) {
+                console.warn('Error loading config:', error);
+                drillMappings = {};
             }
         }
 
         // Save configuration
         function saveConfig() {
-            const config = {
-                webAppUrl: webAppUrl
-            };
-            localStorage.setItem('aimTrackerConfig', JSON.stringify(config));
+            try {
+                const config = {
+                    webAppUrl: webAppUrl,
+                    drillMappings: drillMappings || {}
+                };
+                localStorage.setItem('aimTrackerConfig', JSON.stringify(config));
+            } catch (error) {
+                console.warn('Error saving config:', error);
+            }
         }
 
         // Setup event listeners
@@ -660,6 +757,7 @@
             // Config controls
             document.getElementById('saveConfigBtn').addEventListener('click', saveConfiguration);
             document.getElementById('testConnectionBtn').addEventListener('click', testConnection);
+            document.getElementById('addMappingBtn').addEventListener('click', addDrillMapping);
 
             // Custom dropdowns
             document.getElementById('drillSelect').addEventListener('change', toggleCustomField);
@@ -677,6 +775,7 @@
 
             if (tabName === 'scores') updateScoresDisplay();
             if (tabName === 'analytics') updateAnalyticsDisplay();
+            if (tabName === 'setup') updateDrillMappingsDisplay();
         }
 
         // Save configuration
@@ -730,46 +829,55 @@
 
         // Display routine for specific day
         function displayRoutine(day) {
-            document.querySelectorAll('.day-btn').forEach(btn => {
-                btn.classList.toggle('active', parseInt(btn.dataset.day) === day);
-            });
+            try {
+                document.querySelectorAll('.day-btn').forEach(btn => {
+                    btn.classList.toggle('active', parseInt(btn.dataset.day) === day);
+                });
 
-            const drills = aimData[day];
-            const container = document.getElementById('routineDrills');
-            
-            if (drills.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <h3>🛌 Rest Day</h3>
-                        <p>Recovery and consolidation</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = drills.map(drill => {
-                const latestScore = getLatestScore(drill.name);
-                const scoreDisplay = latestScore 
-                    ? `${latestScore.score}` 
-                    : 'No score';
-                const scoreClass = latestScore ? '' : 'no-score';
-
-                return `
-                    <div class="drill-item" onclick="openScoreModal('${drill.name}')">
-                        <div class="drill-header">
-                            <div class="drill-name">${drill.name}</div>
-                            <div class="drill-score ${scoreClass}">${scoreDisplay}</div>
+                const drills = aimData[day];
+                const container = document.getElementById('routineDrills');
+                
+                if (drills.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <h3>🛌 Rest Day</h3>
+                            <p>Recovery and consolidation</p>
                         </div>
-                        <div class="drill-info">
-                            <div>
-                                <span class="drill-category category-${drill.category.toLowerCase()}">${drill.category}</span>
-                                <span style="margin-left: 8px; font-style: italic;">${drill.notes}</span>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = drills.map(drill => {
+                    const mappedName = applyDrillMapping(drill.name);
+                    const latestScore = getLatestScore(mappedName);
+                    const scoreDisplay = latestScore 
+                        ? `${latestScore.score}` 
+                        : 'No score';
+                    const scoreClass = latestScore ? '' : 'no-score';
+
+                    return `
+                        <div class="drill-item" onclick="openScoreModal('${mappedName}')">
+                            <div class="drill-header">
+                                <div class="drill-name">${mappedName}</div>
+                                <div class="drill-score ${scoreClass}">${scoreDisplay}</div>
                             </div>
-                            <div>${drill.duration}min</div>
+                            <div class="drill-info">
+                                <div>
+                                    <span class="drill-category category-${drill.category.toLowerCase()}">${drill.category}</span>
+                                    <span style="margin-left: 8px; font-style: italic;">${drill.notes}</span>
+                                    ${mappedName !== drill.name ? `<span style="margin-left: 8px; color: #666; font-size: 10px;">(was: ${drill.name})</span>` : ''}
+                                </div>
+                                <div>${drill.duration}min</div>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error displaying routine:', error);
+                // Fallback display without mappings
+                const container = document.getElementById('routineDrills');
+                container.innerHTML = '<div style="color: red; padding: 20px;">Error displaying routine. Please refresh the page.</div>';
+            }
         }
 
         // Get latest score for a drill
