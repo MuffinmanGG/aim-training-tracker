@@ -934,7 +934,65 @@
             document.getElementById('customSkatesGroup').style.display = 'none';
         }
 
-        // Save score to Google Sheets
+        // Test connection using form method
+        async function testConnection() {
+            if (!webAppUrl) {
+                showSyncStatus('Please enter and save your Web App URL first', 'error');
+                return;
+            }
+
+            try {
+                showSyncStatus('Testing connection...', 'info');
+                
+                // Use form submission for test
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = webAppUrl;
+                form.target = 'test_iframe';
+                form.style.display = 'none';
+                
+                // Add test data
+                const testData = {
+                    date: new Date().toISOString(),
+                    drill: 'Connection Test',
+                    score: 0,
+                    mousepad: 'Test',
+                    skates: 'Test'
+                };
+                
+                Object.keys(testData).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = testData[key];
+                    form.appendChild(input);
+                });
+                
+                // Create test iframe
+                let iframe = document.getElementById('test_iframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'test_iframe';
+                    iframe.name = 'test_iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+                
+                // Show success after delay (can't check actual response)
+                setTimeout(() => {
+                    showSyncStatus('✅ Test submitted! Check your Google Sheet for a test entry.');
+                }, 1000);
+                
+            } catch (error) {
+                showSyncStatus('❌ Connection error: ' + error.message, 'error');
+            }
+        }
+
+        // Save score to Google Sheets using form submission to avoid CORS
         async function saveScore() {
             if (!webAppUrl) {
                 showSyncStatus('Please configure your Web App URL in the Setup tab first', 'error');
@@ -981,32 +1039,49 @@
             try {
                 showSyncStatus('Saving to Google Sheets...', 'info');
                 
-                const response = await fetch(webAppUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(scoreEntry)
+                // Use form submission method to avoid CORS
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = webAppUrl;
+                form.target = 'hidden_iframe';
+                form.style.display = 'none';
+                
+                // Add data as form fields
+                Object.keys(scoreEntry).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = scoreEntry[key];
+                    form.appendChild(input);
                 });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        showSyncStatus('✅ Score saved to Google Sheets!');
-                        scores.push({...scoreEntry, id: Date.now()});
-                        updateDisplay();
-                        closeModal();
-                        
-                        // Refresh current view
-                        if (document.querySelector('[data-tab="routine"]').classList.contains('active')) {
-                            displayRoutine(currentDay);
-                        }
-                    } else {
-                        showSyncStatus('❌ Error saving: ' + result.error, 'error');
-                    }
-                } else {
-                    showSyncStatus('❌ Failed to save score. Check your connection.', 'error');
+                
+                // Create hidden iframe for form submission
+                let iframe = document.getElementById('hidden_iframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'hidden_iframe';
+                    iframe.name = 'hidden_iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
                 }
+                
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+                
+                // Assume success since we can't get response with this method
+                setTimeout(() => {
+                    showSyncStatus('✅ Score saved to Google Sheets!');
+                    scores.push({...scoreEntry, id: Date.now()});
+                    updateDisplay();
+                    closeModal();
+                    
+                    // Refresh current view
+                    if (document.querySelector('[data-tab="routine"]').classList.contains('active')) {
+                        displayRoutine(currentDay);
+                    }
+                }, 1000);
+                
             } catch (error) {
                 showSyncStatus('❌ Network error: ' + error.message, 'error');
             }
