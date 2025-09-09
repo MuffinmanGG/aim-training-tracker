@@ -630,50 +630,57 @@
             }
         }
 
-        // Aim training data
+        // Aim training data - Updated routine
         const aimData = {
             1: [
-                {name: "Frogtap", duration: 3, category: "Warmup", notes: "Smooth clicks"},
-                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Reactive flicks"},
-                {name: "Popcorn", duration: 10, category: "Dynamic", notes: "Chaotic switching"},
-                {name: "Snake Track", duration: 3, category: "Tracking", notes: "Linear precision"},
-                {name: "Bounce 180", duration: 5, category: "Integration", notes: "Blend skills"}
+                {name: "1w3ts_small", duration: 3, category: "Warmup", notes: "Warmup stop precision"},
+                {name: "patTargetSwitch", duration: 5, category: "Static", notes: "Static flick + fast stops"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Dynamic click-timing"},
+                {name: "ControlTS", duration: 10, category: "Stability", notes: "Stability, anchoring composure"},
+                {name: "Bounce180", duration: 7, category: "Integration", notes: "Integration, reactive 180° turns"}
             ],
             2: [
-                {name: "1w3ts", duration: 3, category: "Warmup", notes: "Calm anchoring"},
-                {name: "ControlTS", duration: 10, category: "Stability", notes: "Composure"},
-                {name: "Penta Bounce", duration: 10, category: "Stability", notes: "Irregular stability"},
-                {name: "Pasu", duration: 3, category: "Dynamic", notes: "Maintenance"},
-                {name: "VT Gridshot", duration: 5, category: "Integration", notes: "Game-like flicks"}
+                {name: "Floating Heads", duration: 3, category: "Warmup", notes: "Warmup micro flicks"},
+                {name: "1w3ts_small", duration: 5, category: "Static", notes: "Reinforce stop discipline"},
+                {name: "PentaBounce", duration: 10, category: "Stability", notes: "Stability + rhythm"},
+                {name: "ControlTS", duration: 10, category: "Stability", notes: "Deep composure training"},
+                {name: "Gridshot Ultimate", duration: 8, category: "Dynamic", notes: "Explosive dynamic flicking"}
             ],
             3: [
-                {name: "LGCVT", duration: 3, category: "Warmup", notes: "Gentle warm-up"},
-                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Core training"},
-                {name: "VT Penta Click", duration: 10, category: "Static", notes: "Static precision"},
-                {name: "Flow State", duration: 3, category: "Focus", notes: "Mental clarity"},
-                {name: "Popcorn", duration: 5, category: "Integration", notes: "Skill blend"}
+                {name: "Floating Heads", duration: 3, category: "Warmup", notes: "Reactive warmup"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Click-timing rhythm"},
+                {name: "Popcorn", duration: 10, category: "Dynamic", notes: "Chaotic switches, reactive control"},
+                {name: "Gridshot Ultimate", duration: 10, category: "Dynamic", notes: "Explosive flicking under pressure"},
+                {name: "Bounce180", duration: 5, category: "Integration", notes: "Integration finisher"}
             ],
             4: [
-                {name: "1w3ts", duration: 3, category: "Warmup", notes: "Gentle start"},
-                {name: "ControlTS", duration: 5, category: "Stability", notes: "Control focus"},
-                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Main drill"},
-                {name: "Snake Track", duration: 7, category: "Integration", notes: "Tracking blend"}
+                {name: "Floating Heads", duration: 3, category: "Warmup", notes: "Micro warmup"},
+                {name: "Aether", duration: 10, category: "Tracking", notes: "Smooth tracking control"},
+                {name: "Smoothbot", duration: 10, category: "Tracking", notes: "Anchored beam aim, recoil control feel"},
+                {name: "ControlTS", duration: 9, category: "Stability", notes: "Precision anchoring under stress"},
+                {name: "Rifle DM", duration: 5, category: "Integration", notes: "Integration closest to CS fights"}
             ],
             5: [
-                {name: "Frogtap", duration: 3, category: "Warmup", notes: "Preparation"},
-                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Intensive training"},
-                {name: "VT Penta Click", duration: 10, category: "Static", notes: "Precision work"},
-                {name: "Flow State", duration: 3, category: "Focus", notes: "Concentration"},
-                {name: "Bounce 180", duration: 5, category: "Integration", notes: "Skill synthesis"}
+                {name: "Floating Heads", duration: 3, category: "Warmup", notes: "Warmup"},
+                {name: "ControlTS", duration: 10, category: "Stability", notes: "Stability discipline"},
+                {name: "Pasu", duration: 10, category: "Dynamic", notes: "Dynamic switch rhythm"},
+                {name: "PentaBounce", duration: 10, category: "Stability", notes: "Rhythmic stability challenge"},
+                {name: "Bounce180", duration: 5, category: "Integration", notes: "Integration finisher"}
             ],
             6: [
-                {name: "LGCVT", duration: 3, category: "Warmup", notes: "Activation"},
-                {name: "ControlTS", duration: 10, category: "Stability", notes: "Stability focus"},
-                {name: "Penta Bounce", duration: 10, category: "Stability", notes: "Advanced stability"},
-                {name: "Popcorn", duration: 3, category: "Dynamic", notes: "Quick switches"},
-                {name: "VT Gridshot", duration: 5, category: "Integration", notes: "Game application"}
+                {name: "Floating Heads", duration: 3, category: "Warmup", notes: "Warmup"},
+                {name: "Gridshot Ultimate", duration: 10, category: "Dynamic", notes: "Dynamic explosive flicks"},
+                {name: "Rifle DM", duration: 10, category: "Integration", notes: "CS-like rifle engagements"},
+                {name: "Retake/DM", duration: 10, category: "Integration", notes: "Multi-engagement rhythm, positioning"},
+                {name: "ControlTS", duration: 7, category: "Stability", notes: "Precision cooldown"}
             ],
-            7: [] // Rest day
+            7: [
+                {name: "Floating Heads", duration: 3, category: "Warmup", notes: "Light warmup"},
+                {name: "1w3ts_small", duration: 5, category: "Static", notes: "Relaxed stop precision"},
+                {name: "Popcorn", duration: 7, category: "Dynamic", notes: "Fun reactive flicks"},
+                {name: "Aether", duration: 10, category: "Tracking", notes: "Relaxed tracking"},
+                {name: "Play CS2 / DM", duration: 15, category: "Integration", notes: "Direct transfer practice"}
+            ]
         };
 
         // Initialize app
